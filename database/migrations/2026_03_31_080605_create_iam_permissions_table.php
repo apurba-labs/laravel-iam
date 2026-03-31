@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('iam_permissions', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->unique();
+            $table->string('resource');      
+            $table->string('action');
             $table->timestamps();
         });
     }

@@ -14,6 +14,13 @@ return new class extends Migration
         Schema::create('iam_user_role', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id');
             $table->foreignId('role_id')->constrained('iam_roles')->cascadeOnDelete();
+            $table->foreignId('scope_id')->nullable()->constrained('iam_scopes')->nullOnDelete();
+            
+            // Relationships
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            
+            // Prevent duplicate assignments
+            $table->unique(['user_id', 'role_id', 'scope_id'], 'user_role_scope_unique');
         });
     }
 

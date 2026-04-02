@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('iam_roles', function (Blueprint $table) {
+        Schema::create('iam_scopes', function (Blueprint $table) {
             $table->id();
         
-            // The display name (e.g., "Inventory Manager")
-            $table->string('name')->unique(); 
+            // e.g., 'department', 'branch', 'project'
+            $table->string('type')->index(); 
             
-            // The programmatic identifier (e.g., "inventory-manager")
-            $table->string('slug')->unique()->index(); 
+            // e.g., '101', 'finance-dept', 'london-branch'
+            $table->string('value')->index(); 
             
-            // The helper text for UI
-            $table->text('description')->nullable(); 
+            // Ensure we don't create "department:finance" twice
+            $table->unique(['type', 'value']); 
             
             $table->timestamps();
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('iam_roles');
+        Schema::dropIfExists('iam_scopes');
     }
 };

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('iam_permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('resource');      
-            $table->string('action');
+            $table->string('name')->unique(); // post.view
+            $table->string('resource')->nullable(); 
+            $table->string('action')->nullable();   
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

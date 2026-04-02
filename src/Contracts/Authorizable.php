@@ -3,5 +3,5 @@ namespace ApurbaLabs\IAM\Contracts;
 
 interface Authorizable
 {
-    public function can(string $permission): bool;
+    public function canIam(string $permission, $scopeId = null): bool;
 }

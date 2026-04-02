@@ -33,7 +33,10 @@
     "laravel": {
       "providers": [
         "ApurbaLabs\\IAM\\Providers\\IAMServiceProvider"
-      ]
+      ],
+      "aliases": {
+          "IAM": "ApurbaLabs\\IAM\\Facades\\IAM"
+      }
     }
   },
 

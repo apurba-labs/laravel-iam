@@ -1,48 +1,78 @@
 <?php
-namespace ApurbaLabs\IAM\RBAC\Services;
+namespace ApurbaLabs\IAM\Services\RBAC;
+use Illuminate\Support\Facades\Cache;
 
 class PermissionResolver
 {
-    public function can($user, string $permission): bool
+    /**
+     * Get and cache permissions for a specific user and scope.
+     */
+    public function userPermissions($user, $scopeId = null): array
     {
-        $permissions = $user->permissions()->pluck('name');
+        $cacheKey = "iam_permissions_user_{$user->id}_scope_" . ($scopeId ?? 'global');
 
-        // Exact match
-        if ($permissions->contains($permission)) {
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $scopeId) {
+            // This calls the permissions() method in your HasRoles trait
+            return $user->permissions($scopeId)->pluck('name')->toArray();
+        });
+    }
+
+    /**
+     * The core check: Does the user have the permission?
+     */
+    public function can($user, string $permission, $scopeId = null): bool
+    {
+        $permissions = $this->userPermissions($user, $scopeId);
+
+        // Exact match (e.g. 'invoice.approve')
+        if (in_array($permission, $permissions)) {
             return true;
         }
 
-        [$resource, $action] = explode('.', $permission);
-
-        // Resource wildcard
-        if ($permissions->contains("$resource.*")) {
-            return true;
+        // Wildcard match (e.g. 'invoice.*' or 'invoice.manage')
+        if (str_contains($permission, '.')) {
+            [$resource, $action] = explode('.', $permission);
+            
+            if (in_array("$resource.*", $permissions)) return true;
+            if (in_array("$resource.manage", $permissions)) return true;
         }
 
-        // Global wildcard
-        if ($permissions->contains("*.*")) {
-            return true;
-        }
-
-        // Manage rule
-        if ($permissions->contains("$resource.manage")) {
+        // Global admin match
+        if (in_array("*.*", $permissions)) {
             return true;
         }
 
         return false;
     }
 
-    public function usersWithPermission(string $permission)
+    /**
+     * Find all users who have a specific permission in a specific scope.
+     * Useful for the Approval Engine to find "Who can approve this?"
+     */
+    public function usersWithPermission(string $permission, $scopeId = null)
     {
+        if (!str_contains($permission, '.')) return collect();
+
         [$resource, $action] = explode('.', $permission);
-
         $userModel = config('auth.providers.users.model');
+        $userTable = (new $userModel)->getTable();
 
-        return $userModel::whereHas('roles.permissions', function ($q) use ($permission, $resource) {
-            $q->where('name', $permission)
-            ->orWhere('name', "$resource.*")
-            ->orWhere('name', "$resource.manage")
-            ->orWhere('name', '*.*');
-        })->get();
+        $validPermissions = [$permission, "$resource.*", "$resource.manage", "*.*"];
+
+        return $userModel::query()
+            ->select("$userTable.*")
+            ->distinct()
+            // Join with Roles through the Pivot
+            ->join('iam_user_role', "$userTable.id", "=", "iam_user_role.user_id")
+            ->join('iam_roles', "iam_user_role.role_id", "=", "iam_roles.id")
+            // Join Roles with Permissions
+            ->join('iam_role_permission', "iam_roles.id", "=", "iam_role_permission.role_id")
+            ->join('iam_permissions', "iam_role_permission.permission_id", "=", "iam_permissions.id")
+            // Filter by Permission Names and Scope
+            ->whereIn('iam_permissions.name', $validPermissions)
+            ->when($scopeId, function ($query) use ($scopeId) {
+                $query->where('iam_user_role.scope_id', $scopeId);
+            })
+            ->get();
     }
 }

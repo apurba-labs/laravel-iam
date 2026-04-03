@@ -9,6 +9,7 @@ use ApurbaLabs\IAM\Middleware\CheckPermission;
 use ApurbaLabs\IAM\Services\RBAC\PermissionResolver;
 use ApurbaLabs\IAM\Services\RBAC\ResourceRegistry;
 use ApurbaLabs\IAM\Services\RBAC\ActionRegistry;
+use Illuminate\Support\Facades\Blade;
 
 class IAMServiceProvider extends ServiceProvider
 {
@@ -41,5 +42,19 @@ class IAMServiceProvider extends ServiceProvider
                 \ApurbaLabs\IAM\Console\Commands\SyncPermissions::class,
             ]);
         }
+    }
+    protected function registerBladeDirectives()
+    {
+        // 1. @iam('resource.action', $scopeId)
+        // Checks if the user has the permission in a specific context.
+        Blade::if('iam', function ($permission, $scopeId = null) {
+            return auth()->check() && app('iam')->can(auth()->user(), $permission, $scopeId);
+        });
+
+        // 2. @role('manager', $scopeId)
+        // Checks if the user has a specific role in a specific context.
+        Blade::if('role', function ($role, $scopeId = null) {
+            return auth()->check() && auth()->user()->hasRole($role, $scopeId);
+        });
     }
 }

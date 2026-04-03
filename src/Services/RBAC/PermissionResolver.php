@@ -24,22 +24,27 @@ class PermissionResolver
     {
         $permissions = $this->userPermissions($user, $scopeId);
 
-        // Exact match (e.g. 'invoice.approve')
-        if (in_array($permission, $permissions)) {
-            return true;
-        }
+        /**
+         * The "Four Levels of Truth" Strategy
+         * We evaluate authority from the broadest to the most specific.
+         */
 
-        // Wildcard match (e.g. 'invoice.*' or 'invoice.manage')
+        // Level 1: Global Authority (*.*)
+        if (in_array("*.*", $permissions)) return true;
+
+        // Level 2: Atomic Match (Direct Permission)
+        if (in_array($permission, $permissions)) return true;
+
+        // Level 3 & 4: Hierarchical Wildcards
         if (str_contains($permission, '.')) {
             [$resource, $action] = explode('.', $permission);
             
-            if (in_array("$resource.*", $permissions)) return true;
-            if (in_array("$resource.manage", $permissions)) return true;
-        }
-
-        // Global admin match
-        if (in_array("*.*", $permissions)) {
-            return true;
+            // Level 3: Resource Authority (e.g., invoice.* or invoice.manage)
+            if (in_array("{$resource}.*", $permissions)) return true;
+            if (in_array("{$resource}.manage", $permissions)) return true;
+            
+            // Level 4: Action Authority (e.g., *.approve)
+            if (in_array("*.{$action}", $permissions)) return true;
         }
 
         return false;
@@ -57,7 +62,14 @@ class PermissionResolver
         $userModel = config('auth.providers.users.model');
         $userTable = (new $userModel)->getTable();
 
-        $validPermissions = [$permission, "$resource.*", "$resource.manage", "*.*"];
+        //valid set to include action-based wildcards
+        $validPermissions = [
+            $permission, 
+            "{$resource}.*", 
+            "{$resource}.manage", 
+            "*.{$action}",
+            "*.*"
+        ];
 
         return $userModel::query()
             ->select("$userTable.*")
@@ -70,8 +82,10 @@ class PermissionResolver
             ->join('iam_permissions', "iam_role_permission.permission_id", "=", "iam_permissions.id")
             // Filter by Permission Names and Scope
             ->whereIn('iam_permissions.name', $validPermissions)
-            ->when($scopeId, function ($query) use ($scopeId) {
+            ->where(function ($query) use ($scopeId) {
                 $query->where('iam_user_role.scope_id', $scopeId);
+                // allow Global Admins to show up too
+                $query->orWhereNull('iam_user_role.scope_id');
             })
             ->get();
     }

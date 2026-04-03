@@ -82,8 +82,10 @@ class PermissionResolver
             ->join('iam_permissions', "iam_role_permission.permission_id", "=", "iam_permissions.id")
             // Filter by Permission Names and Scope
             ->whereIn('iam_permissions.name', $validPermissions)
-            ->when($scopeId, function ($query) use ($scopeId) {
+            ->where(function ($query) use ($scopeId) {
                 $query->where('iam_user_role.scope_id', $scopeId);
+                // allow Global Admins to show up too
+                $query->orWhereNull('iam_user_role.scope_id');
             })
             ->get();
     }

@@ -22,18 +22,35 @@ trait HasRoles
      */
     public function assignRole($roleIdentifier, $scopeId = null)
     {
-        // Try to find by slug first, then name
-        $role = Role::where('slug', $roleIdentifier)
-                    ->orWhere('name', $roleIdentifier)
-                    ->first();
+        $role = null;
+
+        // If it's already a Role object, use it directly
+        if ($roleIdentifier instanceof Role) {
+            $role = $roleIdentifier;
+        } 
+        // If it's a numeric ID
+        elseif (is_numeric($roleIdentifier)) {
+            $role = Role::find($roleIdentifier);
+        } 
+        // If it's a String (Slug or Name)
+        else {
+            $role = Role::where('slug', $roleIdentifier)
+                        ->orWhere('name', $roleIdentifier)
+                        ->first();
+        }
 
         if ($role) {
+            // We use attach or syncWithoutDetaching with the pivot data
             $this->roles()->syncWithoutDetaching([
                 $role->id => ['scope_id' => $scopeId]
             ]);
             
             $this->flushIAMCache();
+            
+            return $this; // Return $this for chaining
         }
+
+        throw new \Exception("Role [{$roleIdentifier}] not found.");
     }
 
     /**

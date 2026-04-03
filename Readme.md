@@ -71,7 +71,9 @@ php artisan migrate
 ## 🛠 Usage
 
 ### 1. Setup your Model
-Add the trait and contract to your User.php:
+```markdown
+Implement the Authorizable contract and add the HasRoles trait to your User model. This unlocks the relationship and authority checks.
+```
 ```php
 use ApurbaLabs\IAM\Traits\HasRoles;
 use ApurbaLabs\IAM\Contracts\Authorizable;
@@ -80,51 +82,78 @@ class User extends Authenticatable implements Authorizable {
     use HasRoles;
 }
 ```
-
-### 2. Registration Resources
-
+### 2. Registering Resources & Actions
 ```markdown
+Define your application's domain in AppServiceProvider.php. This populates the internal registry used for the "Four Levels of Truth" engine.
 Register your modules in `AppServiceProvider.php`:
-
+```
 ```php
 public function boot() {
+    // Register high-level modules
     IAM::registerResources([
         'inventory' => 'Stock Management',
         'payroll'   => 'Employee Salary'
     ]);
 
+    // Register global actions
     IAM::registerActions(['submit', 'approve']);
 }
 ```
-
-### 3. Syncing to Database
+### 3. Synchronize to Database
 ```bash
 php artisan iam:sync
 
 ```
---- 
-### 🔍 4. Checking Permissions (The Logic)
-
-### Via Facade
+### 4. Authorization Logic
+```markdown
+#### Via Facade
+The Facade is the most flexible way to check authority, especially for multi-tenant or scoped applications.
+```
 ```php
-// Global check
+// Global Check (Is this user an Admin anywhere?)
 IAM::can($user, 'inventory.view');
 
-// Scoped check (e.g., for Branch ID 101)
-IAM::can($user, 'inventory.view', 101);
+// Contextual Check (Is this user a Manager specifically for Branch 101?)
+IAM::can($user, 'inventory.approve', 101);
 
 ```
-### Via Middleware
+```markdown
+#### Via Middleware
 
-The middleware automatically detects the scope from the X-Scope-ID header.
-
+Perfect for protecting API routes. The middleware automatically looks for an X-Scope-ID header to evaluate contextual permissions.
+```
 ```php
-// Single permission
+// Single permission check
 Route::middleware('iam:inventory.view')->get('/inventory', ...);
 
 // Multiple permissions (OR logic)
 Route::middleware('iam:payroll.edit|payroll.manage')->post('/payroll', ...);
 
+```
+### 5. UI Integration (Blade Magic)
+```markdown
+We’ve provided expressive Blade directives to keep your templates clean. No more messy @if blocks.
+#### Permission Checks
+{{-- Checks if the user can approve in the current branch context --}}
+@iam('invoice.approve', $branchId)
+    <button class="btn-success">Approve Invoice</button>
+@else
+    <span class="text-muted">Read-only Access</span>
+@endiam
+```
+#### Role Checks
+```markdown
+{{-- Checks if the user has the 'admin' role globally or in a scope --}}
+@role('admin')
+    <a href="/settings">System Settings</a>
+@endrole
+```
+### 6. Workflow Resolution
+```markdown
+Need to find who to notify? Use the resolver to find users with specific authority within a specific scope.
+```PHP
+// Returns a collection of Users who can approve invoices for Branch 101
+$approvers = IAM::usersWithPermission('invoice.approve', 101);
 ```
 ---
 📄 License

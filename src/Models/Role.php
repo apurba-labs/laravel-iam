@@ -5,6 +5,7 @@ namespace ApurbaLabs\IAM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use ApurbaLabs\IAM\Database\Factories\RoleFactory;
+use Illuminate\Support\Str;
 
 class Role extends Model
 {
@@ -29,6 +30,17 @@ class Role extends Model
     protected static function newFactory()
     {
         return RoleFactory::new();
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($role) {
+            if (empty($role->slug)) {
+                $role->slug = Str::slug($role->name);
+            }
+        });
     }
 }
 

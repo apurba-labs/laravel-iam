@@ -156,5 +156,10 @@ Need to find who to notify? Use the resolver to find users with specific authori
 $approvers = IAM::usersWithPermission('invoice.approve', 101);
 ```
 ---
+## Support the Project 🌟
+```markdown
+If you find this package useful for your SaaS or enterprise projects, please consider giving it a **Star** on GitHub. It helps other developers find the project and keeps me motivated to add new features!
+```
+---
 📄 License
 The MIT License (MIT). Please see License File for more information.

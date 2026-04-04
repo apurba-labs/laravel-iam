@@ -16,6 +16,18 @@ trait HasRoles
         return $this->belongsToMany(Role::class, 'iam_user_role')
                     ->withPivot('scope_id');
     }
+    /**
+     * Check if user has a specific role in a specific scope.
+     */
+    public function hasRole($role, $scopeId = null): bool
+    {
+        return $this->roles()
+            ->where(function ($q) use ($role) {
+                $q->where('name', $role)->orWhere('slug', $role);
+            })
+            ->wherePivot('scope_id', $scopeId)
+            ->exists();
+    }
 
     /**
      * Assign a role to a user within a specific scope.

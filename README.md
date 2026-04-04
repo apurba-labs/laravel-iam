@@ -6,7 +6,26 @@
 
 A powerful, context-aware Identity and Access Management (IAM) system for Laravel. Inspired by AWS IAM, built for modern SaaS architectures.
 
-## 🚀 Key Features
+## Quick Example
+
+```php
+IAM::can($user, 'inventory.approve', $branchId);
+```
+---
+
+## Installation
+
+Install the package via composer:
+
+```bash
+composer require apurba-labs/laravel-iam
+```
+Run migrations:
+```php
+php artisan migrate
+```
+---
+## Key Features
 
 * **Contextual Scopes:** Assign roles to users for specific branches or tenants.
 * **Wildcard Logic:** Support for `resource.*`, `*.action`, and `*.*` overrides.
@@ -54,20 +73,6 @@ By providing a **Facade**, we offer a clean, expressive API (`IAM::can()`). Inte
 The `PermissionResolver` employs a **Strategy Pattern** to evaluate permissions. It switches between "Global," "Wildcard," and "Atomic" strategies to find the fastest path to an authorization decision.
 
 ---
-
-## 📦 Installation
-
-Install the package via composer:
-
-```bash
-composer require apurba-labs/laravel-iam
-```
-Publish and run the migrations:
-```bash
-php artisan vendor:publish --tag="iam-migrations"
-php artisan migrate
-```
----
 ## 🛠 Usage
 
 ### 1. Setup your Model
@@ -105,7 +110,7 @@ php artisan iam:sync
 
 ```
 ### 4. Authorization Logic
-```markdown
+```md
 #### Via Facade
 The Facade is the most flexible way to check authority, especially for multi-tenant or scoped applications.
 ```
@@ -117,7 +122,7 @@ IAM::can($user, 'inventory.view');
 IAM::can($user, 'inventory.approve', 101);
 
 ```
-```markdown
+```md
 #### Via Middleware
 
 Perfect for protecting API routes. The middleware automatically looks for an X-Scope-ID header to evaluate contextual permissions.
@@ -131,35 +136,66 @@ Route::middleware('iam:payroll.edit|payroll.manage')->post('/payroll', ...);
 
 ```
 ### 5. UI Integration (Blade Magic)
-```markdown
+```md
 We’ve provided expressive Blade directives to keep your templates clean. No more messy @if blocks.
 #### Permission Checks
 {{-- Checks if the user can approve in the current branch context --}}
-@iam('invoice.approve', $branchId)
+@iam('invoice.approve', 101)
     <button class="btn-success">Approve Invoice</button>
 @else
     <span class="text-muted">Read-only Access</span>
 @endiam
 ```
 #### Role Checks
-```markdown
-{{-- Checks if the user has the 'admin' role globally or in a scope --}}
-@role('admin')
-    <a href="/settings">System Settings</a>
+```md
+@{{-- Check for a role in a specific scope --}}
+@role('manager', 101)
+    <div class="badge">Branch Manager</div>
 @endrole
 ```
+#### Global UI logic
+```md
+{{-- If you omit the second argument, the system checks for Global authority (where scope_id is null):}}
+@role('admin')
+    <nav>System Settings</nav>
+@endrole
+
+```
+```md
 ### 6. Workflow Resolution
-```markdown
 Need to find who to notify? Use the resolver to find users with specific authority within a specific scope.
 ```PHP
 // Returns a collection of Users who can approve invoices for Branch 101
 $approvers = IAM::usersWithPermission('invoice.approve', 101);
 ```
 ---
-## Support the Project 🌟
-```markdown
-If you find this package useful for your SaaS or enterprise projects, please consider giving it a **Star** on GitHub. It helps other developers find the project and keeps me motivated to add new features!
-```
+## Roadmap
+
+We are committed to making **Laravel IAM** the standard for contextual authorization. Here is what's coming next:
+
+### v0.3.0 - The "Developer Experience" Update
+- [ ] **Custom Middleware Aliases:** Support for `@iam:invoice.view,scope_id` directly in routes.
+- [ ] **Policy Integration:** Seamless bridge between `IAM::can` and Laravel's native `Gate` and `Policy` system.
+- [ ] **Audit Logs:** A built-in observer to log every permission change for compliance.
+
+### v0.4.0 - The "Admin UI" Update
+- [ ] **Blade Component Library:** Pre-built Tailwind components for Role/Permission management.
+- [ ] **Visual Permission Matrix:** A console command to generate a table of who-can-do-what across scopes.
+
+### v1.0.0 - Stability & Performance
+- [ ] **Caching Layer:** Redis integration for high-performance permission resolution.
+- [ ] **API Documentation:** Comprehensive documentation site with real-world use cases.
+- [ ] **Stable Release:** Long-term support (LTS) version.
+
+---
+```md
+## 🌟 Support the Project
+
+If this package saved you time or simplified your authorization logic:
+
+👉 Give it a **⭐ Star on GitHub**
+
+Your support helps grow the project and bring more advanced features to the community 🚀
 ---
 📄 License
 The MIT License (MIT). Please see License File for more information.

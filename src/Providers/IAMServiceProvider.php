@@ -42,6 +42,8 @@ class IAMServiceProvider extends ServiceProvider
                 \ApurbaLabs\IAM\Console\Commands\SyncPermissions::class,
             ]);
         }
+        // Register Blade Directives
+        $this->registerBladeDirectives();
     }
     protected function registerBladeDirectives()
     {
@@ -54,7 +56,7 @@ class IAMServiceProvider extends ServiceProvider
         // 2. @role('manager', $scopeId)
         // Checks if the user has a specific role in a specific context.
         Blade::if('role', function ($role, $scopeId = null) {
-            return auth()->check() && auth()->user()->hasRole($role, $scopeId);
+            return auth()->check() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole($role, $scopeId);
         });
     }
 }

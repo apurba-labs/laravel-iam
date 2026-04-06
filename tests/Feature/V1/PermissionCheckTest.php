@@ -24,8 +24,8 @@ class PermissionCheckTest extends TestCase
 
         // Create Roles & Permissions
         $editorRole = Role::create(['name' => 'Editor', 'slug' => 'editor']);
-        $viewPermission = Permission::create(['name' => 'post.view']);
-        $wildcardPermission = Permission::create(['name' => 'post.*']);
+        $viewPermission = Permission::create(['slug' => 'post.view']);
+        $wildcardPermission = Permission::create(['slug' => 'post.*']);
 
         // Attach Permissions to Role
         $editorRole->permissions()->attach([$viewPermission->id, $wildcardPermission->id]);

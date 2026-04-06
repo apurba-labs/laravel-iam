@@ -13,7 +13,7 @@ class PermissionResolver
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $scopeId) {
             // This calls the permissions() method in your HasRoles trait
-            return $user->permissions($scopeId)->pluck('name')->toArray();
+            return $user->permissions($scopeId)->pluck('slug')->toArray();
         });
     }
 
@@ -85,8 +85,8 @@ class PermissionResolver
             // Join Roles with Permissions
             ->join('iam_role_permission', "iam_roles.id", "=", "iam_role_permission.role_id")
             ->join('iam_permissions', "iam_role_permission.permission_id", "=", "iam_permissions.id")
-            // Filter by Permission Names and Scope
-            ->whereIn('iam_permissions.name', $validPermissions)
+            // Filter by Permission Slugs and Scope
+            ->whereIn('iam_permissions.slug', $validPermissions)
             ->where(function ($query) use ($scopeId) {
                 $query->where('iam_user_role.scope_id', $scopeId);
                 // allow Global Admins to show up too

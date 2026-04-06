@@ -29,7 +29,7 @@ class ApiPermissionTest extends TestCase
         // 1. Setup
         $user = User::create(['name' => 'Manager', 'email' => 'mgr@test.com', 'password' => '123']);
         $role = Role::create(['name' => 'Approver', 'slug' => 'approver']);
-        $perm = Permission::create(['name' => 'invoice.approve']);
+        $perm = Permission::create(['slug' => 'invoice.approve']);
         $role->permissions()->attach($perm);
 
         // Assign role ONLY for Branch 101

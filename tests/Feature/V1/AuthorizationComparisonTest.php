@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use ApurbaLabs\IAM\Tests\Support\Models\User;
 use ApurbaLabs\IAM\Models\Role;
 use ApurbaLabs\IAM\Models\Permission;
+use Illuminate\Support\Str;
 
 class AuthorizationComparisonTest extends TestCase
 {
@@ -66,7 +67,8 @@ class AuthorizationComparisonTest extends TestCase
             $action   = $parts[1] ?? '*';
 
             $permission = Permission::firstOrCreate([
-                'name'     => $pName,
+                'slug'     => $pName,
+                'name' => Str::headline(str_replace('.', ' ', $pName)),
                 'resource' => $resource,
                 'action'   => $action,
             ]);

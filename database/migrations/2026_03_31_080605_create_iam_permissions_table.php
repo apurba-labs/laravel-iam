@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('iam_permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // post.view
+            $table->string('slug')->unique(); // The unique identifier (e.g., 'invoice.approve')
+            $table->string('name');           // The display name (e.g., 'Approve Invoice')
             $table->string('resource')->nullable(); 
             $table->string('action')->nullable();   
             $table->string('description')->nullable();

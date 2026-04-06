@@ -49,10 +49,14 @@ class IAMServiceProvider extends ServiceProvider
         }
 
         // Bridge to Laravel's native Gate system
-        Gate::before(function ($user, $ability, ...$params) {
+        Gate::before(function ($user, $ability, $arguments) {
+
             if ($user instanceof Authorizable) {
-                // Check if a scopeId was passed as the first extra argument
-                $scopeId = $params[0] ?? null;
+                // Laravel passes extra arguments to the Gate as an array in $params
+                // We take the first element as the scopeId
+                // If we call $user->can('perm', 505), $arguments is [0 => 505]
+                // We must extract the actual ID:
+                $scopeId = is_array($arguments) ? ($arguments[0] ?? null) : $arguments;
 
                 if (app('iam')->can($user, $ability, $scopeId)) {
                     return true;

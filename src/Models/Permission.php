@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use ApurbaLabs\IAM\Database\Factories\PermissionFactory;
 use ApurbaLabs\IAM\Exceptions\InvalidPermissionException;
+use Illuminate\Support\Str;
 
 class Permission extends Model
 {

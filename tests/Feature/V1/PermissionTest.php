@@ -7,7 +7,7 @@ use ApurbaLabs\IAM\Exceptions\InvalidPermissionException;
 use ApurbaLabs\IAM\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ApiPermissionTest extends TestCase
+class PermissionTest extends TestCase
 {
     use RefreshDatabase;
 

@@ -7,6 +7,7 @@ use ApurbaLabs\IAM\Models\Role;
 use ApurbaLabs\IAM\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Str;
 
 class BladeDirectiveTest extends TestCase
 {
@@ -49,8 +50,9 @@ class BladeDirectiveTest extends TestCase
             // Split 'invoice.approve' into resource and action
             $parts = explode('.', $pName);
             $permission = Permission::firstOrCreate(
-                ['name' => $pName],
+                ['slug' => $pName],
                 [
+                    'name' => Str::headline(str_replace('.', ' ', $pName)),
                     'resource' => $parts[0] ?? null,
                     'action'   => $parts[1] ?? null,
                 ]

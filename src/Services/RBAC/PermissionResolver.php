@@ -22,6 +22,11 @@ class PermissionResolver
      */
     public function can($user, string $permission, $scopeId = null): bool
     {
+        // FORCE $scopeId to be a single value, never an array
+        if (is_array($scopeId)) {
+            $scopeId = $scopeId[0] ?? null;
+        }
+
         $permissions = $this->userPermissions($user, $scopeId);
 
         /**

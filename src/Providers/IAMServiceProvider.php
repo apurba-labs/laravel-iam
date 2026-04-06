@@ -9,7 +9,11 @@ use ApurbaLabs\IAM\Middleware\CheckPermission;
 use ApurbaLabs\IAM\Services\RBAC\PermissionResolver;
 use ApurbaLabs\IAM\Services\RBAC\ResourceRegistry;
 use ApurbaLabs\IAM\Services\RBAC\ActionRegistry;
+use ApurbaLabs\IAM\Contracts\Authorizable;
+
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
+
 
 class IAMServiceProvider extends ServiceProvider
 {
@@ -17,6 +21,7 @@ class IAMServiceProvider extends ServiceProvider
     {
         // Bind the Registry as a Singleton (The storage for resources)
         $this->app->singleton(ResourceRegistry::class);
+        $this->app->singleton(ActionRegistry::class);
 
         // Bind the Resolver to the Service Container
         $this->app->singleton('iam', function ($app) {
@@ -42,6 +47,24 @@ class IAMServiceProvider extends ServiceProvider
                 \ApurbaLabs\IAM\Console\Commands\SyncPermissions::class,
             ]);
         }
+
+        // Bridge to Laravel's native Gate system
+        Gate::before(function ($user, $ability, $arguments) {
+
+            if ($user instanceof Authorizable) {
+                // Laravel passes extra arguments to the Gate as an array in $params
+                // We take the first element as the scopeId
+                // If we call $user->can('perm', 505), $arguments is [0 => 505]
+                // We must extract the actual ID:
+                $scopeId = is_array($arguments) ? ($arguments[0] ?? null) : $arguments;
+
+                if (app('iam')->can($user, $ability, $scopeId)) {
+                    return true;
+                }
+            }
+            return null; // Fallback to standard policies if IAM doesn't match
+        });
+        
         // Register Blade Directives
         $this->registerBladeDirectives();
     }

@@ -41,6 +41,24 @@ class IAMManager
     }
 
     /**
+     * @method static \Illuminate\Support\Collection usersWithRole(string $role, $scopeId = null)
+     */
+    public function usersWithRole(string $role, $scopeId = null)
+    {
+        $userModel = config('auth.providers.users.model');
+
+        return $userModel::query()
+            ->whereHas('roles', function ($query) use ($role, $scopeId) {
+                $query->where('slug', $role);
+
+                if ($scopeId) {
+                    $query->wherePivot('scope_id', $scopeId);
+                }
+            })
+            ->get();
+    }
+
+    /**
      * For developers to register their modules.
      */
     public function registerResources(array $resources): void

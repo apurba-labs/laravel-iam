@@ -10,6 +10,31 @@ A powerful, context-aware Identity and Access Management (IAM) system for Larave
 
 ```php
 IAM::can($user, 'inventory.approve', $branchId);
+IAM::can($user, 'post.edit')
+IAM::usersWithPermission('approval.finance.approve')
+IAM::usersWithRole('manager')
+IAM::rolesForUser($user)
+IAM::permissionsForUser($user)
+```
+
+```md
+Example:
+IAM::rolesForUser(auth()->user())
+
+Use cases:
+profile screens 
+admin UI 
+audit ordebug
+```
+```md
+Example:
+IAM::permissionsForUser(auth()->user())
+
+Use cases:
+effective permission display
+debug tools
+admin dashboards
+policy introspection
 ```
 ---
 

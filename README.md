@@ -10,6 +10,31 @@ A powerful, context-aware Identity and Access Management (IAM) system for Larave
 
 ```php
 IAM::can($user, 'inventory.approve', $branchId);
+IAM::can($user, 'post.edit')
+IAM::usersWithPermission('approval.finance.approve')
+IAM::usersWithRole('manager')
+IAM::rolesForUser($user)
+IAM::permissionsForUser($user)
+```
+
+```md
+Example:
+IAM::rolesForUser(auth()->user())
+
+Use cases:
+profile screens 
+admin UI 
+audit ordebug
+```
+```md
+Example:
+IAM::permissionsForUser(auth()->user())
+
+Use cases:
+effective permission display
+debug tools
+admin dashboards
+policy introspection
 ```
 ---
 
@@ -93,22 +118,73 @@ Define your application's domain in AppServiceProvider.php. This populates the i
 Register your modules in `AppServiceProvider.php`:
 ```
 ```php
-public function boot() {
-    // Register high-level modules
+use ApurbaLabs\IAM\Facades\IAM;
+
+public function boot(): void
+{
     IAM::registerResources([
-        'inventory' => 'Stock Management',
-        'payroll'   => 'Employee Salary'
+        'expense' => 'Expense Approval',
+        'requisition' => 'Requisition',
     ]);
 
-    // Register global actions
-    IAM::registerActions(['submit', 'approve']);
+    IAM::registerActions([
+        'view',
+        'create',
+        'approve',
+        'reject',
+    ]);
 }
 ```
-### 3. Synchronize to Database
-```bash
-php artisan iam:sync
+---
+### Default Actions
 
+The IAM system includes a set of built-in default actions.  
+If you do not explicitly register actions, these defaults will be used automatically.
+
+#### Default Actions
+
+- `create`
+- `read`
+- `update`
+- `delete`
+- `list`
+
+#### Workflow Actions
+
+- `publish`
+- `approve`
+- `reject`
+- `refund`
+
+#### Special Actions
+
+- `manage` → Grants all actions for a resource
+- `*` (wildcard) → Full system-level access
+
+#### Custom Actions
+If needed, you can override defaults:
+```php
+IAM::registerActions([
+    'submit',
+    'approve',
+    'archive',
+]);
 ```
+💡 Tip: Default actions are recommended for most use cases and ensure consistency across modules.
+---
+### 3. Sync Permissions
+Run:
+```bash
+php artisan iam:sync-permissions
+```
+This will generate permissions like:
+
+- expense.view
+- expense.approve
+- requisition.create
+
+💡 This approach allows fully dynamic and scalable permission management.
+
 ### 4. Authorization Logic
 ```md
 #### Via Facade

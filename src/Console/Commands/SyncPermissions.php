@@ -4,15 +4,16 @@ namespace ApurbaLabs\IAM\Console\Commands;
 
 use Illuminate\Console\Command;
 use ApurbaLabs\IAM\Models\Permission;
-use ApurbaLabs\IAM\RBAC\ActionRegistry;
-use ApurbaLabs\IAM\RBAC\ResourceRegistry;
+
+use ApurbaLabs\IAM\Services\RBAC\ActionRegistry;
+use ApurbaLabs\IAM\Services\RBAC\ResourceRegistry;
 
 class SyncPermissions extends Command
 {
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'iam:sync {--dry-run : Only show what will be created without saving}';
+    protected $signature = 'iam:sync-permissions {--dry-run : Only show what will be created without saving}';
 
     /**
      * The console command description.

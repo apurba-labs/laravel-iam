@@ -114,8 +114,11 @@ class IAMManager
     /**
      * Register custom actions.
      */
-    public function registerActions(array $actions): void
+    public function registerActions(array $actions = []): void
     {
+        if (empty($actions)) {
+            $actions = \ApurbaLabs\IAM\Services\RBAC\PermissionActions::all();
+        }
         $this->actionRegistry->register($actions);
     }
 }

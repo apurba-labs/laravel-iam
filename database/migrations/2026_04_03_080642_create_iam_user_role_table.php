@@ -36,6 +36,7 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('iam_user_role');
+        Schema::dropIfExists('users');
         Schema::enableForeignKeyConstraints();
     }
 };

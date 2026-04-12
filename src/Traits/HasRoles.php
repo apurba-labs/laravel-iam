@@ -86,6 +86,8 @@ trait HasRoles
      */
     public function flushIAMCache(): void
     {
-        Cache::forget("iam_permissions_user_{$this->id}");
+        $key = "iam:user:{$this->id}:cache_version";
+
+        Cache::increment($key);
     }
 }

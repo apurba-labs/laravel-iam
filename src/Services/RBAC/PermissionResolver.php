@@ -9,10 +9,18 @@ class PermissionResolver
      */
     public function userPermissions($user, $scopeId = null): array
     {
-        $cacheKey = "iam_permissions_user_{$user->id}_scope_" . ($scopeId ?? 'global');
+        $userId = is_object($user) ? $user->getKey() : $user;
+
+        $scopeKey = $scopeId
+            ? (is_scalar($scopeId) ? $scopeId : md5(json_encode($scopeId)))
+            : 'global';
+
+        // VERSIONED CACHE KEY (SAFE FOR ALL DRIVERS)
+        $version = Cache::get("iam:user:{$userId}:cache_version", 1);
+
+        $cacheKey = "iam:v1:user:{$userId}:scope:{$scopeKey}:v{$version}";
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $scopeId) {
-            // This calls the permissions() method in your HasRoles trait
             return $user->permissions($scopeId)->pluck('slug')->toArray();
         });
     }

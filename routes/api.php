@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use ApurbaLabs\IAM\Http\Controllers\Api\CheckController;
 use ApurbaLabs\IAM\Http\Controllers\Api\RoleController;
 use ApurbaLabs\IAM\Http\Controllers\Api\PermissionController;
-use ApurbaLabs\IAM\Http\Controllers\Api\UserRoleController;
 
 Route::prefix('api/iam')->middleware(['api', 'auth:sanctum'])->group(function () {
     // CHECK PERMISSION
@@ -23,6 +22,6 @@ Route::prefix('api/iam')->middleware(['api', 'auth:sanctum'])->group(function ()
     Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
 
     // USER -> ROLE
-    Route::post('users/{user}/roles', [UserRoleController::class, 'attach']);
-    Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'detach']);
+    //Route::post('users/{user}/roles', [UserRoleController::class, 'attach']);
+    //Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'detach']);
 });
